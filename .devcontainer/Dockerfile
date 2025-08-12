@@ -1,23 +1,36 @@
-# 使用一个稳定的基础镜像
-FROM mcr.microsoft.com/devcontainers/base:ubuntu
+# 基于微软 devcontainer 基础镜像（Ubuntu 22.04）
+FROM mcr.microsoft.com/vscode/devcontainers/base:0-ubuntu-22.04
 
-# 设置环境变量，避免安装过程中出现交互提示
+ARG FLUTTER_DIR=/usr/local/flutter
+ENV FLUTTER_HOME=${FLUTTER_DIR}
+ENV PUB_CACHE=/workspaces/.pub-cache
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 安装基础的系统依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl unzip xz-utils zip ca-certificates wget sudo \
-    libglu1-mesa fonts-liberation openjdk-11-jdk \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# 基本依赖：git/curl/unzip/xz/openjdk（Android 构建需要 Java）
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      ca-certificates curl git unzip xz-utils zip libglu1 libgl1 libx11-6 \
+      procps sudo gnupg dirmngr openjdk-11-jdk-headless fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
 
-# 克隆 Flutter 的 stable 分支
-RUN git clone --depth 1 -b stable https://github.com/flutter/flutter.git /usr/local/flutter
+# 克隆 Flutter stable 分支（浅克隆以减小体积）
+RUN git clone --depth 1 --branch stable https://github.com/flutter/flutter.git ${FLUTTER_DIR} \
+    && chmod -R a+rX ${FLUTTER_DIR}
 
-# 【关键修复1】立刻把文件夹的所有权交给 codespace 用户，避免后续的“权限不足”问题
-RUN chown -R codespace:codespace /usr/local/flutter
+# 将 Flutter 路径写入 /etc/profile.d，供所有 shell 使用
+RUN echo "export FLUTTER_HOME=${FLUTTER_DIR}" > /etc/profile.d/flutter.sh \
+    && echo "export PATH=${FLUTTER_DIR}/bin:${FLUTTER_DIR}/bin/cache/dart-sdk/bin:\$PATH" >> /etc/profile.d/flutter.sh \
+    && chmod +x /etc/profile.d/flutter.sh
 
-# 设置 Flutter 相关的环境变量
-ENV FLUTTER_HOME=/usr/local/flutter
-ENV PATH="${FLUTTER_HOME}/bin:${FLUTTER_HOME}/bin/cache/dart-sdk/bin:${PATH}"
+# 创建 pub cache 并修正权限
+RUN mkdir -p ${PUB_CACHE} \
+    && chown -R vscode:root ${PUB_CACHE} ${FLUTTER_DIR}
 
-# 注意：最后一行 WORKDIR 已经被我们删除了
+# 为非 root 的 vscode 用户设置 PATH 环境（VS Code 连接时会使用）
+USER vscode
+ENV PATH=${FLUTTER_DIR}/bin:${FLUTTER_DIR}/bin/cache/dart-sdk/bin:${PATH}
+
+# 试着预热 flutter（若网络或依赖问题不会导致失败）
+RUN bash -lc "if command -v flutter >/dev/null 2>&1; then flutter --version || true; fi"
+
+EXPOSE 8080 5555
