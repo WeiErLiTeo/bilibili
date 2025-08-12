@@ -1,18 +1,9 @@
 {
-  "name": "Flutter Stable Environment",
-  // 方案核心1：使用官方验证过的基础镜像，而不是自己编写和维护 Dockerfile。
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-
-  // 方案核心2：使用官方推荐的 "features" 功能来自动安装和配置Flutter。
-  // 这种方法比自己写Dockerfile更稳定，能自动处理好权限、路径和依赖问题。
-  "features": {
-    "ghcr.io/devcontainers/features/flutter:1": {}
+  "name": "Flutter Custom Build Environment",
+  "build": {
+    "dockerfile": "Dockerfile"
   },
-
-  // 在环境创建好之后，自动运行一次 flutter doctor 检查环境。
-  "postCreateCommand": "flutter doctor",
-
-  // 自动为你安装推荐的 VS Code 插件。
+  "postCreateCommand": "git config --global --add safe.directory /usr/local/flutter && flutter doctor -v",
   "customizations": {
     "vscode": {
       "extensions": [
