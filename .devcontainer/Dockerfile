@@ -20,5 +20,4 @@ RUN chown -R codespace:codespace /usr/local/flutter
 ENV FLUTTER_HOME=/usr/local/flutter
 ENV PATH="${FLUTTER_HOME}/bin:${FLUTTER_HOME}/bin/cache/dart-sdk/bin:${PATH}"
 
-# 设置工作目录
-WORKDIR /workspaces/bilibili
+# 注意：最后一行 WORKDIR 已经被我们删除了
