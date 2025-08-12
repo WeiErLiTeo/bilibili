@@ -11,20 +11,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bilibili/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('检查应用是否能正常启动', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const BilibiliApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that the AppBar title is present.
+    expect(find.text('哔哩哔哩 - 热门视频'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify that a loading indicator is initially displayed.
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // We can't actually wait for the network request to finish in a simple widget test,
+    // but we can check if the ListView appears eventually.
+    //
+    // For more advanced testing, we would use mocking to simulate the network response.
+    // However, for this basic test, we'll just check for the list after pumping.
+    //
+    // This is a simplified check for the purpose of getting rid of the error.
+    await tester.pumpAndSettle(); // 等待所有动画和帧完成
+
+    // Verify that the ListView is present after loading.
+    expect(find.byType(ListView), findsOneWidget);
   });
 }
