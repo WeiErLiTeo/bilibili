@@ -1,27 +1,26 @@
 {
-  "_comment": "Flutter 开发用 Dev Container 配置。放置于 .devcontainer/devcontainer.json。请确保同目录存在 Dockerfile，用于构建镜像。",
-  "name": "Flutter Dev Container",
+  "_comment": "针对 GitHub Codespaces 优化的 Flutter Dev Container 配置（尽量容错，避免常见报错）。",
+  "name": "Flutter (Codespaces)",
   "build": {
     "dockerfile": "Dockerfile"
   },
   "remoteUser": "vscode",
   "containerEnv": {
-    "_comment": "调整下面路径以匹配你 Dockerfile 中 Flutter 的安装位置",
-    "PUB_CACHE": "/workspaces/.pub-cache",
+    "_comment": "若 Dockerfile 安装路径不同，请同步修改 FLUTTER_HOME 与 PATH",
     "FLUTTER_HOME": "/usr/local/flutter",
+    "PUB_CACHE": "/workspaces/.pub-cache",
     "PATH": "/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
   },
-  "forwardPorts": [8080],
+  "forwardPorts": [ 8080, 5555 ],
   "settings": {
-    "_comment": "容器内 VS Code 设置",
     "terminal.integrated.shell.linux": "/bin/bash",
     "files.watcherExclude": {
       "**/.pub-cache/**": true,
       "**/.dart_tool/**": true
     }
   },
-  "postCreateCommand": "bash -lc 'set -e; git config --global --add safe.directory \"$(pwd)\" || true; git config --global --add safe.directory /usr/local/flutter || true; flutter doctor -v'",
-  "postStartCommand": "bash -lc 'set -e; if [ -f pubspec.yaml ]; then flutter pub get || true; fi'",
+  "postCreateCommand": "bash -lc 'set -euo pipefail; echo \"[INFO] postCreateCommand start\"; if command -v git >/dev/null 2>&1; then git config --global --add safe.directory \"$(pwd)\" || true; fi; if command -v flutter >/dev/null 2>&1; then flutter doctor -v || true; else echo \"[WARN] flutter 未在 PATH 中，跳过 flutter doctor。若确认已安装，请检查 FLUTTER_HOME 与 PATH。\"; fi; echo \"[INFO] postCreateCommand end\"'",
+  "postStartCommand": "bash -lc 'set -euo pipefail; if command -v flutter >/dev/null 2>&1 && [ -f pubspec.yaml ]; then echo \"[INFO] running flutter pub get\"; flutter pub get || true; fi'",
   "shutdownAction": "stopContainer",
   "customizations": {
     "vscode": {
@@ -30,10 +29,11 @@
         "Dart-Code.flutter"
       ],
       "settings": {
-        "dart.sdkPath": "/usr/local/flutter/bin/cache/dart-sdk",
-        "dart.flutterSdkPath": "/usr/local/flutter"
+        "dart.flutterSdkPath": "/usr/local/flutter",
+        "dart.sdkPath": "/usr/local/flutter/bin/cache/dart-sdk"
       }
     }
   },
-  "_comment_additional": "如果你的 Dockerfile 将 Flutter 安装到其他路径，请把 FLUTTER_HOME、PATH 和 dart.flutterSdkPath/dart.sdkPath 同步修改。"
+  "_comment_additional": "如果需要 Android 模拟器或完整 SDK，我可以再给你一个启用了 Android SDK 的版本（镜像会很大）。"
 }
+
