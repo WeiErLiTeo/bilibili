@@ -1,13 +1,10 @@
 {
-  "name": "Flutter Codespace",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "features": {
-    "ghcr.io/devcontainers/features/flutter:1": {}
+  "name": "Flutter (Codespaces minimal)",
+  "build": {
+    "dockerfile": "Dockerfile"
   },
-  "postCreateCommand": "flutter doctor",
-  "forwardPorts": [
-    8080
-  ],
+  "postCreateCommand": "flutter doctor -v",
+  "forwardPorts": [8080],
   "customizations": {
     "vscode": {
       "extensions": [
