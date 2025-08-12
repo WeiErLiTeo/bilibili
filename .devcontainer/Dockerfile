@@ -10,7 +10,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 克隆 Flutter stable（浅克隆加速）
+# ... (前面的内容不变) ...
+
+# 克隆 Flutter stable（浅克隆加速）
 RUN git clone --depth 1 -b stable https://github.com/flutter/flutter.git /usr/local/flutter
+
+# ！！！新增下面这行，把文件夹所有权交给 codespace 用户！！！
+RUN chown -R codespace:codespace /usr/local/flutter
+
+# 环境变量（把 flutter 和 dart 加入 PATH）
+ENV FLUTTER_HOME=/usr/local/flutter
+
+# ... (后面的内容不变) ...
 
 # 环境变量（把 flutter 和 dart 加入 PATH）
 ENV FLUTTER_HOME=/usr/local/flutter
